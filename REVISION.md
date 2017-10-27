@@ -1,4 +1,12 @@
-#Revisions
+Revision history
+===============================
+
+
+v1.0.0 (2017-10-27)
+-------------------------------
+
+* Prepare for ht17.
+* Upgrade versions and tools in package.json.
 
 
 v0.1.9 (2016-11-14)
