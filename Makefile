@@ -28,6 +28,9 @@ THIS_MAKEFILE := $(call WHERE-AM-I)
 # Echo some nice helptext based on the target comment
 HELPTEXT = $(ECHO) "$(ACTION)--->" `egrep "^\# target: $(1) " $(THIS_MAKEFILE) | sed "s/\# target: $(1)[ ]*-[ ]* / /g"` "$(NO_COLOR)"
 
+# Check version  and path to command and display on one line
+CHECK_VERSION = printf "%-15s %-10s %s\n" "`basename $(1)`" "`$(1) --version $(2)`" "`which $(1)`"
+
 
 
 # Add local bin path for test tools
@@ -41,6 +44,10 @@ LESS_MODULES	= modules/
 LESS_OPTIONS 	= --strict-imports --include-path=$(LESS_MODULES)
 CSSLINT_OPTIONS = --quiet
 FONT_AWESOME 	= modules/font-awesome/fonts/
+
+CSSLINT   := $(NPMBIN)/csslint
+STYLELINT := $(NPMBIN)/stylelint
+LESSC     := $(NPMBIN)/lessc
 
 
 
@@ -80,13 +87,20 @@ clean-all: clean
 
 
 
+# target: check              - Check installed tools.
+.PHONY:  check
+check: npm-version
+	@$(call HELPTEXT,$@)
+
+
+
 # target: less               - Compile and minify the stylesheet(s).
 .PHONY: less
 less: prepare-build
 	@$(call HELPTEXT,$@)
 	
-	$(foreach file, $(LESS), $(NPMBIN)/lessc $(LESS_OPTIONS) $(file) build/css/$(basename $(file)).css; )
-	$(foreach file, $(LESS), $(NPMBIN)/lessc --clean-css $(LESS_OPTIONS) $(file) build/css/$(basename $(file)).min.css; )
+	$(foreach file, $(LESS), $(LESSC) $(LESS_OPTIONS) $(file) build/css/$(basename $(file)).css; )
+	$(foreach file, $(LESS), $(LESSC) --clean-css $(LESS_OPTIONS) $(file) build/css/$(basename $(file)).min.css; )
 
 	cp build/css/*.min.css htdocs/css/
 
@@ -106,8 +120,8 @@ less-install: less
 less-lint: less
 	@$(call HELPTEXT,$@)
 
-	$(foreach file, $(LESS), $(NPMBIN)/lessc --lint $(LESS_OPTIONS) $(file) > build/lint/$(file); )
-	- $(foreach file, $(LESS), $(NPMBIN)/csslint $(CSSLINT_OPTIONS) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).css; )
+	$(foreach file, $(LESS), $(LESSC) --lint $(LESS_OPTIONS) $(file) > build/lint/$(file); )
+	- $(foreach file, $(LESS), $(CSSLINT) $(CSSLINT_OPTIONS) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).css; )
 
 	ls -l build/lint/
 
@@ -129,9 +143,9 @@ update:
 
 
 
-# target: npm-install        - Install npm development packages.
-# target: npm-update         - Update npm development packages.
-# target: npm-version        - Display version for each package.
+# target: npm-install        - Install npm development npm packages.
+# target: npm-update         - Update npm development npm packages.
+# target: npm-version        - Display version for each npm package.
 .PHONY: npm-installl npm-update npm-version
 npm-install: 
 	@$(call HELPTEXT,$@)
@@ -143,5 +157,8 @@ npm-update:
 
 npm-version:
 	@$(call HELPTEXT,$@)
-	$(NPMBIN)/lessc --version
-	$(NPMBIN)/csslint --version
+	@$(call CHECK_VERSION, node)
+	@$(call CHECK_VERSION, npm)
+	@$(call CHECK_VERSION, $(CSSLINT))
+	@$(call CHECK_VERSION, $(STYLELINT))
+	@$(call CHECK_VERSION, $(LESSC), | cut -d ' ' -f 2)
