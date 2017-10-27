@@ -121,7 +121,8 @@ less-lint: less
 	@$(call HELPTEXT,$@)
 
 	$(foreach file, $(LESS), $(LESSC) --lint $(LESS_OPTIONS) $(file) > build/lint/$(file); )
-	- $(foreach file, $(LESS), $(CSSLINT) $(CSSLINT_OPTIONS) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).css; )
+	- $(foreach file, $(LESS), $(CSSLINT) $(CSSLINT_OPTIONS) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).csslint.css; )
+	- $(foreach file, $(LESS), $(STYLELINT) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).stylelint.css; )
 
 	ls -l build/lint/
 
