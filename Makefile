@@ -94,43 +94,9 @@ check: npm-version
 
 
 
-# target: less               - Compile and minify the stylesheet(s).
-.PHONY: less
-less: prepare-build
-	@$(call HELPTEXT,$@)
-	
-	$(foreach file, $(LESS), $(LESSC) $(LESS_OPTIONS) $(file) build/css/$(basename $(file)).css; )
-	$(foreach file, $(LESS), $(LESSC) --clean-css $(LESS_OPTIONS) $(file) build/css/$(basename $(file)).min.css; )
-
-	cp build/css/*.min.css htdocs/css/
-
-
-
-# target: less-install       - Installing the stylesheet(s).
-.PHONY: less-install
-less-install: less
-	@$(call HELPTEXT,$@)
-	if [ -d ../htdocs/css/ ]; then cp build/css/*.min.css ../htdocs/css/; fi
-	if [ -d ../htdocs/js/ ]; then rsync -a js/ ../htdocs/js/; fi
-
-
-
-# target: less-lint          - Lint the less stylesheet(s).
-.PHONY: less-lint
-less-lint: less
-	@$(call HELPTEXT,$@)
-
-	$(foreach file, $(LESS), $(LESSC) --lint $(LESS_OPTIONS) $(file) > build/lint/$(file); )
-	- $(foreach file, $(LESS), $(CSSLINT) $(CSSLINT_OPTIONS) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).csslint.css; )
-	- $(foreach file, $(LESS), $(STYLELINT) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).stylelint.css; )
-
-	ls -l build/lint/
-
-
-
-# target: test               - Execute all tests.
-.PHONY: test
-test: less-lint
+# target: install            - Install tools neded (including dev).
+.PHONY: install
+install: npm-install
 	@$(call HELPTEXT,$@)
 
 
@@ -141,6 +107,45 @@ update:
 	@$(call HELPTEXT,$@)
 	git pull
 	git pull --recurse-submodules && git submodule foreach git pull origin master
+
+
+
+# target: test               - Execute all tests.
+.PHONY: test
+test: less-lint
+	@$(call HELPTEXT,$@)
+
+
+
+# target: less               - Compile and minify the stylesheet(s).
+# target: less-install       - Installing the stylesheet(s).
+# target: less-lint          - Lint the less stylesheet(s).
+.PHONY: less less-install less-lint
+less: prepare-build
+	@$(call HELPTEXT,$@)
+	
+	$(foreach file, $(LESS), $(LESSC) $(LESS_OPTIONS) $(file) build/css/$(basename $(file)).css; )
+	$(foreach file, $(LESS), $(LESSC) --clean-css $(LESS_OPTIONS) $(file) build/css/$(basename $(file)).min.css; )
+
+	cp build/css/*.min.css htdocs/css/
+
+
+
+less-install: less
+	@$(call HELPTEXT,$@)
+	if [ -d ../htdocs/css/ ]; then cp build/css/*.min.css ../htdocs/css/; fi
+	if [ -d ../htdocs/js/ ]; then rsync -a js/ ../htdocs/js/; fi
+
+
+
+less-lint: less
+	@$(call HELPTEXT,$@)
+
+	$(foreach file, $(LESS), $(LESSC) --lint $(LESS_OPTIONS) $(file) > build/lint/$(file); )
+	- $(foreach file, $(LESS), $(CSSLINT) $(CSSLINT_OPTIONS) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).csslint.css; )
+	- $(foreach file, $(LESS), $(STYLELINT) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).stylelint.css; )
+
+	ls -l build/lint/
 
 
 
