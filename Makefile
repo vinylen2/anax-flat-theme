@@ -118,8 +118,6 @@ test: less-lint
 
 
 # target: less               - Compile and minify the stylesheet(s).
-# target: less-install       - Installing the stylesheet(s).
-# target: less-lint          - Lint the less stylesheet(s).
 .PHONY: less less-install less-lint
 less: prepare-build
 	@$(call HELPTEXT,$@)
@@ -131,6 +129,7 @@ less: prepare-build
 
 
 
+# target: less-install       - Installing the stylesheet(s).
 less-install: less
 	@$(call HELPTEXT,$@)
 	if [ -d ../htdocs/css/ ]; then cp build/css/*.min.css ../htdocs/css/; fi
@@ -138,14 +137,14 @@ less-install: less
 
 
 
+# target: less-lint          - Lint the less stylesheet(s).
 less-lint: less
 	@$(call HELPTEXT,$@)
 
 	$(foreach file, $(LESS), $(LESSC) --lint $(LESS_OPTIONS) $(file) > build/lint/$(file); )
-	- $(foreach file, $(LESS), $(CSSLINT) $(CSSLINT_OPTIONS) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).csslint.css; )
-	- $(foreach file, $(LESS), $(STYLELINT) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).stylelint.css; )
-
-	ls -l build/lint/
+	@#- $(foreach file, $(LESS), $(CSSLINT) $(CSSLINT_OPTIONS) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).csslint.css; )
+	@#- $(foreach file, $(LESS), $(STYLELINT) build/css/$(basename $(file)).css > build/lint/$(basename $(file)).stylelint.css; )
+	@#ls -l build/lint/
 
 
 
